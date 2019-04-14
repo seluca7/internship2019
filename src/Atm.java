@@ -17,6 +17,8 @@ public class Atm {
     private  int openTimeM;
     private  int closeTimeH;
     private  int closeTimeM;
+
+    //cheia este id-ul atm-ului si valoarea este durata pana la acel atm de la atm-ul actual
     private HashMap<Integer,Integer> durataAtm= new HashMap<>();
 
 

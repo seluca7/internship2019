@@ -19,7 +19,7 @@ public class Service {
     private Atm atm3 = new Atm(3,30,22,0,12,0);
     private Atm atm4 = new Atm(4,45,17,0,1,0);
 
-
+    //initializare duratele dintre atm-uri, sunt valorile din tabel
     public void initAtms(){
         durataAtm1.put(2,40);
         durataAtm1.put(3,40);

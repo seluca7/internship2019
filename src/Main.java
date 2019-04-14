@@ -9,7 +9,8 @@ public class Main {
 
         traseu = algo.getAtmsRouts();
         for(int i=0; i<(traseu.size());i++){
-            System.out.println(traseu.get(i).getId() + " Atm "+ traseu.get(i).getOpenTimeH() );
+            System.out.println(" Atm "+ traseu.get(i).getId() );
+
         }
     }
 }

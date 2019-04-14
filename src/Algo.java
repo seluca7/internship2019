@@ -10,16 +10,18 @@ public class Algo {
     int minute=0;
     Atm atmAux;
 
-
-    Atm ret (int index){
+    // returneaza atmul din lista de atm-uri(atms) cu id-ul dat ca parametru, poate fi 1,2,3,4
+    Atm ret (int id){
         for(int i=0;i<atms.size()-1;i++){
-            if (atms.get(i).getId()==index)
+            if (atms.get(i).getId()==id)
                 return atms.get(i);
         }
         return null;
 
     }
 
+    //face diferenta intre 2 ore rezultatul fiind exprimat in minute, care pot fi pozitive sa nu, daca sunt negative inseamna ca atm-ul
+    //se deschide mai tarziu decat timpul de start al clientului
     int diferentaOre(int ora1, int minut1, int ora2, int minut2){
         int ret=0;
         if (ora1<ora2)
@@ -31,6 +33,7 @@ public class Algo {
         return ret;
     }
 
+    //aduna 2 ore
     void addOre(int ora1, int minut1, int ora2, int minut2){
 
          minute =minut1+minut2;
@@ -40,46 +43,96 @@ public class Algo {
         }
         ore=ora1+ora2;
     }
-/*
+
+    // face retragerea de 5000 de lei de la un atm, de pe unul sau mai multe carduri
+    //consideram ca se cunosc comisionele cardului si de aceea verificam diponibilitatea de sold si valabilitatea
+    //cardului patinum dupa care verificam cardul gold si ultima oara silver.
     void withdraw(){
 
-        String anCurent= srv.getCl().getDataInceput().charAt(6)+srv.getCl().getDataInceput().charAt(7)+srv.getCl().getDataInceput().charAt(8)+srv.getCl().getDataInceput().charAt(9);
+        String anCurent= srv.getCl().getDataInceput().charAt(6)+srv.getCl().getDataInceput().charAt(7)+ ""+srv.getCl().getDataInceput().charAt(8) +srv.getCl().getDataInceput().charAt(9);
         String anAuxilizar;
 
         int anCr=Integer.parseInt(anCurent);
         int anCrAux;
 
+        Boolean valid= true;
 
-        if(srv.getCl().getSil().getFee()<srv.getCl().getGold().getFee())
-            if(srv.getCl().getSil().getFee()<srv.getCl().getPlat().getFee())
-                // consideram ca se stie ca platinum are comision cel mai mic, urmat de gold is silver
-
-                anAuxilizar=srv.getCl().getPlat().getExpDate().charAt(6)+srv.getCl().getPlat().getExpDate().charAt(7)+srv.getCl().getPlat().getExpDate().charAt(8)+srv.getCl().getPlat().getExpDate().charAt(9);
-                anCrAux=Integer.parseInt(anAuxilizar);
-                if(anCr>anCrAux) { // card expirat
-                    anAuxilizar = srv.getCl().getGold().getExpDate().charAt(6) + srv.getCl().getGold().getExpDate().charAt(7) + srv.getCl().getGold().getExpDate().charAt(8) + srv.getCl().getGold().getExpDate().charAt(9);
-                    anCrAux=Integer.parseInt(anAuxilizar);
-
-                    if(anCr>anCrAux){
-                        anAuxilizar = srv.getCl().getSil().getExpDate().charAt(6) + srv.getCl().getSil().getExpDate().charAt(7) + srv.getCl().getSil().getExpDate().charAt(8) + srv.getCl().getSil().getExpDate().charAt(9);
-                        anCrAux=Integer.parseInt(anAuxilizar);
-                        System.out.println("toate cardurile sunt expirate");
-                    }else{
-                        int sumaRetras= srv.getCl().getSumaDeRetras();
-                        if(sumaRetras>srv.getCl().getSil().getWithdrawLimit())// mai putin in cont decat limita
-                            if(srv.getCl().getSil().getWithdrawLimit()>srv.getCl().getSil().getAvAmount()) {
-                                srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getSil().getAvAmount());
-                                srv.getCl().getSil().setAvAmount(0);
-                            }else{
-                                srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getSil().getWithdrawLimit());
-                                srv.getCl().getSil().setAvAmount(srv.getCl().getSil().getAvAmount()-srv.getCl().getSil().getWithdrawLimit());
-                            }
+        // consideram ca se stie ca platinum are comision cel mai mic, urmat de gold is silver
+        if (srv.getCl().getPlat().getAvAmount()>0){
+            anAuxilizar = srv.getCl().getPlat().getExpDate().charAt(6) + srv.getCl().getPlat().getExpDate().charAt(7) +""+ srv.getCl().getPlat().getExpDate().charAt(8) + srv.getCl().getPlat().getExpDate().charAt(9);
+            anCrAux = Integer.parseInt(anAuxilizar);
+            if (anCr > anCrAux) { // card expirat
+                valid =false;
+            }else{
+                int sumaRetras = srv.getCl().getSumaDeRetras();
+                if (sumaRetras > srv.getCl().getPlat().getWithdrawLimit())// mai putin de retras decat necesar
+                    if (srv.getCl().getPlat().getWithdrawLimit() > srv.getCl().getPlat().getAvAmount()) {
+                        srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getPlat().getAvAmount());
+                        srv.getCl().getPlat().setAvAmount(0);
+                    } else {
+                        srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getPlat().getWithdrawLimit());
+                        srv.getCl().getPlat().setAvAmount(srv.getCl().getPlat().getAvAmount() - srv.getCl().getPlat().getWithdrawLimit());
                     }
+            }
+        }else{
+            valid=false;
+        }
+
+
+
+        if(!valid) {
+
+            valid=true;
+
+            if (srv.getCl().getGold().getAvAmount() > 0) {
+                anAuxilizar = srv.getCl().getGold().getExpDate().charAt(6) + srv.getCl().getGold().getExpDate().charAt(7) + ""+srv.getCl().getGold().getExpDate().charAt(8) + srv.getCl().getGold().getExpDate().charAt(9);
+                anCrAux = Integer.parseInt(anAuxilizar);
+                if (anCr > anCrAux) { // card expirat
+                    valid = false;
+                } else {
+                    int sumaRetras = srv.getCl().getSumaDeRetras();
+                    if (sumaRetras > srv.getCl().getGold().getWithdrawLimit())// mai putin de retras decat necesar
+                        if (srv.getCl().getGold().getWithdrawLimit() > srv.getCl().getGold().getAvAmount()) {
+                            srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getGold().getAvAmount());
+                            srv.getCl().getGold().setAvAmount(0);
+                        } else {
+                            srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getGold().getWithdrawLimit());
+                            srv.getCl().getGold().setAvAmount(srv.getCl().getGold().getAvAmount() - srv.getCl().getGold().getWithdrawLimit());
+                        }
                 }
+            } else {
+                valid = false;
+            }
+        }
+
+        if(!valid) {
+
+            valid=true;
+
+            if (srv.getCl().getSil().getAvAmount() > 0) {
+                anAuxilizar = srv.getCl().getSil().getExpDate().charAt(6) + srv.getCl().getSil().getExpDate().charAt(7) + ""+srv.getCl().getSil().getExpDate().charAt(8) + srv.getCl().getSil().getExpDate().charAt(9);
+                anCrAux = Integer.parseInt(anAuxilizar);
+                if (anCr > anCrAux) { // card expirat
+                    valid = false;
+                } else {
+                    int sumaRetras = srv.getCl().getSumaDeRetras();
+                    if (sumaRetras > srv.getCl().getSil().getWithdrawLimit())// mai putin de retras decat necesar
+                        if (srv.getCl().getSil().getWithdrawLimit() > srv.getCl().getSil().getAvAmount()) {
+                            srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getSil().getAvAmount());
+                            srv.getCl().getSil().setAvAmount(0);
+                        } else {
+                            srv.getCl().setSumaDeRetras(srv.getCl().getSumaDeRetras() - srv.getCl().getSil().getWithdrawLimit());
+                            srv.getCl().getSil().setAvAmount(srv.getCl().getSil().getAvAmount() - srv.getCl().getSil().getWithdrawLimit());
+                        }
+                }
+            } else {
+                valid = false;
+            }
+        }
 
     }
-    */
 
+    //returneaza durata minima a atm-ului pentru a ajunge din punctul de start
     int minDuration (){
         int min=1000;
 
@@ -92,6 +145,9 @@ public class Algo {
         return min;
     }
 
+    // returneaza lista de atm-uri in ordinea prin care trece clientul pentru a retrage banii
+    // clientul se orienteaza in functie de durata minima necesara pentru a ajunge la un ATM var verifica si daca este deschis sau nu
+    //sau cat trebuie sa astepte pentru a se dechide si daca este convenabil sau nu
     public List<Atm> getAtmsRouts(){
 
         List<Atm> traseu  = new ArrayList<Atm>();
@@ -123,14 +179,14 @@ public class Algo {
             ////////////////////////////////
             for(int j=0;j<atms.size()-1;j++){
                 if(atms.get(j).getId()== atmAux.getId()) {
-                    System.out.println(j);
+                   // System.out.println(j);
                     atms.remove(j);
                     break;
                 }
             }
-            for(int j=0;j<atms.size();j++){
-                System.out.println(atms.get(j).getId());
-            }
+           // for(int j=0;j<atms.size();j++){
+               // System.out.println(atms.get(j).getId());
+          //  }
             //atms.remove(indexMi);
             if(minDuration()<(-aux)) {// se verifica daca timpul de asteptare este mai mic decat la celelate bancomate chiar daca clientul trebuie sa astepte pana se deschide
 
@@ -156,14 +212,10 @@ public class Algo {
             //int mini =60;
 
             //returneaza atmul cel mai apropiat fata de atm-ul la care este clientul in momentul de fata
-            System.out.println(atmAux.getId() + " scos");
+           // System.out.println(atmAux.getId() + " scos");
 
             switch (atmAux.getId()){
-            case 1: System.out.println("Sunt aici");
-                System.out.println(srv.getAtm1().getDurataAtm().get(2));
-                System.out.println(srv.getAtm1().getDurataAtm().get(3));
-                System.out.println(srv.getAtm1().getDurataAtm().get(4));
-
+            case 1:
                 if(srv.getAtm1().getDurataAtm().get(2)<=srv.getAtm1().getDurataAtm().get(3)) {
                 if (srv.getAtm1().getDurataAtm().get(2) <= srv.getAtm1().getDurataAtm().get(4))
                     atmAux = srv.getAtm2();
@@ -208,16 +260,16 @@ public class Algo {
                 break;
 
             }
-            System.out.println(atmAux.getId());
+           // System.out.println(atmAux.getId());
 
             aux = diferentaOre(srv.getCl().getOraIncepH(),srv.getCl().getOraIncepM(),atmAux.getOpenTimeH(),atmAux.getOpenTimeM());
 
             if(aux >= 0 ){ // timpul pana la deschiderea atm-ului
                // atmAux=ret(indexMi);
                 //traseu.add(ret(indexMi));
-                System.out.println("sunt aici 2");
+               // System.out.println("sunt aici 2");
                 traseu.add(atmAux);
-                System.out.println(traseu.get(1).getId());
+               // System.out.println(traseu.get(1).getId());
                         for(int j=0;j<atms.size()-1;j++){
                             if(atms.get(j).getId()== atmAux.getId()) {
                                 atms.remove(j);
